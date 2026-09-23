@@ -1,266 +1,123 @@
 'use client';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState('live');
+  const [coins, setCoins] = useState(1000);
+  const [betAmount, setBetAmount] = useState(100);
+  const [placedBets, setPlacedBets] = useState([]);
 
-  // Sample Match Data
-  const matches = [
-    {
-      id: 1,
-      status: 'LIVE',
-      category: 'T20 International',
-      team1: 'India',
-      team1Flag: '🇮🇳',
-      team1Score: '185/4 (18.2 ov)',
-      team2: 'Australia',
-      team2Flag: '🇦🇺',
-      team2Score: '182/8 (20.0 ov)',
-      summary: 'India need 3 runs in 10 balls',
-      venue: 'Wankhede Stadium, Mumbai',
-    },
-    {
-      id: 2,
-      status: 'UPCOMING',
-      category: 'ODI Series',
-      team1: 'England',
-      team1Flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
-      team1Score: 'Yet to bat',
-      team2: 'Pakistan',
-      team2Flag: '🇵🇰',
-      team2Score: 'Yet to bat',
-      summary: 'Match starts today at 7:00 PM IST',
-      venue: 'Lord\'s, London',
-    },
-    {
-      id: 3,
-      status: 'FINISHED',
-      category: 'Test Match',
-      team1: 'South Africa',
-      team1Flag: '🇿🇦',
-      team1Score: '320 & 210',
-      team2: 'New Zealand',
-      team2Flag: '🇳🇿',
-      team2Score: '280 & 190',
-      summary: 'South Africa won by 60 runs',
-      venue: 'Newlands, Cape Town',
-    },
+  // Live Match Mock Data
+  const matchData = {
+    title: "IPL 2026 - Match 12",
+    team1: "Chennai Super Kings",
+    team2: "Mumbai Indians",
+    score: "CSK 142/3 (14.2 Overs)",
+  };
+
+  // 3 Session Betting Options
+  const sessions = [
+    { id: 1, name: "6 Over Session (Powerplay)", target: "48.5 Runs", type: "OVER/UNDER" },
+    { id: 2, name: "10 Over Session", target: "85.5 Runs", type: "OVER/UNDER" },
+    { id: 3, name: "15 Over Session", target: "128.5 Runs", type: "OVER/UNDER" },
   ];
 
-  const filteredMatches = matches.filter((m) => {
-    if (activeTab === 'live') return m.status === 'LIVE';
-    if (activeTab === 'upcoming') return m.status === 'UPCOMING';
-    if (activeTab === 'finished') return m.status === 'FINISHED';
-    return true;
-  });
+  const handlePlaceBet = (optionName, prediction) => {
+    if (coins < betAmount) {
+      alert("Aapke paas paryapt coins nahi hain!");
+      return;
+    }
+
+    setCoins(prev => prev - betAmount);
+    setPlacedBets(prev => [
+      ...prev,
+      {
+        id: Date.now(),
+        option: optionName,
+        prediction: prediction,
+        amount: betAmount,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+    ]);
+  };
 
   return (
-    <div style={styles.container}>
-      {/* Header */}
-      <header style={styles.header}>
-        <h1 style={styles.title}>⚡ Live Score Center</h1>
-        <p style={styles.subtitle}>Real-time cricket match updates</p>
-      </header>
+    <div style={{ padding: '20px', fontFamily: 'sans-serif', maxWidth: '600px', margin: '0 auto', backgroundColor: '#0f172a', color: '#fff', minHeight: '100vh' }}>
+      
+      {/* Header & Wallet */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #334155', paddingBottom: '15px' }}>
+        <h2>🏏 IPL Coin Arena</h2>
+        <div style={{ backgroundColor: '#1e293b', padding: '8px 15px', borderRadius: '20px', border: '1px solid #f59e0b', color: '#f59e0b', fontWeight: 'bold' }}>
+          🪙 {coins} Coins
+        </div>
+      </div>
 
-      {/* Filter Tabs */}
-      <div style={styles.tabContainer}>
-        {['live', 'upcoming', 'finished', 'all'].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
+      {/* Live Match Card */}
+      <div style={{ backgroundColor: '#1e293b', padding: '15px', borderRadius: '10px', marginTop: '20px', borderLeft: '4px solid #3b82f6' }}>
+        <span style={{ backgroundColor: '#ef4444', fontSize: '12px', padding: '3px 8px', borderRadius: '5px', fontWeight: 'bold' }}>LIVE</span>
+        <h4 style={{ margin: '8px 0 4px 0', color: '#94a3b8' }}>{matchData.title}</h4>
+        <h3 style={{ margin: '0 0 8px 0' }}>{matchData.team1} vs {matchData.team2}</h3>
+        <p style={{ margin: '0', color: '#38bdf8', fontWeight: 'bold' }}>{matchData.score}</p>
+      </div>
+
+      {/* Bet Amount Selector */}
+      <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <label>Bet Amount:</label>
+        {[50, 100, 500].map(amt => (
+          <button 
+            key={amt} 
+            onClick={() => setBetAmount(amt)}
             style={{
-              ...styles.tabButton,
-              ...(activeTab === tab ? styles.activeTabButton : {}),
+              padding: '6px 12px',
+              borderRadius: '6px',
+              border: betAmount === amt ? '2px solid #38bdf8' : '1px solid #475569',
+              backgroundColor: betAmount === amt ? '#0284c7' : '#334155',
+              color: '#fff',
+              cursor: 'pointer'
             }}
           >
-            {tab.toUpperCase()}
+            🪙 {amt}
           </button>
         ))}
       </div>
 
-      {/* Matches List */}
-      <div style={styles.matchList}>
-        {filteredMatches.length === 0 ? (
-          <p style={styles.noMatches}>No matches available in this category.</p>
-        ) : (
-          filteredMatches.map((match) => (
-            <div key={match.id} style={styles.card}>
-              <div style={styles.cardHeader}>
-                <span style={styles.category}>{match.category}</span>
-                <span
-                  style={{
-                    ...styles.statusBadge,
-                    backgroundColor:
-                      match.status === 'LIVE'
-                        ? '#e53e3e'
-                        : match.status === 'UPCOMING'
-                        ? '#3182ce'
-                        : '#38a169',
-                  }}
-                >
-                  {match.status === 'LIVE' ? '🔴 LIVE' : match.status}
-                </span>
-              </div>
+      {/* Session Betting Cards */}
+      <h3 style={{ marginTop: '25px', color: '#f8fafc' }}>⚡ Session Betting Options</h3>
+      {sessions.map(session => (
+        <div key={session.id} style={{ backgroundColor: '#1e293b', padding: '12px 15px', borderRadius: '8px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontWeight: 'bold', fontSize: '14px' }}>{session.name}</div>
+            <div style={{ fontSize: '12px', color: '#94a3b8' }}>Target: {session.target}</div>
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button 
+              onClick={() => handlePlaceBet(session.name, 'YES / OVER')}
+              style={{ padding: '8px 12px', backgroundColor: '#16a34a', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+            >
+              YES
+            </button>
+            <button 
+              onClick={() => handlePlaceBet(session.name, 'NO / UNDER')}
+              style={{ padding: '8px 12px', backgroundColor: '#dc2626', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+            >
+              NO
+            </button>
+          </div>
+        </div>
+      ))}
 
-              <div style={styles.teamsContainer}>
-                {/* Team 1 */}
-                <div style={styles.teamRow}>
-                  <div style={styles.teamInfo}>
-                    <span style={styles.flag}>{match.team1Flag}</span>
-                    <span style={styles.teamName}>{match.team1}</span>
-                  </div>
-                  <span style={styles.score}>{match.team1Score}</span>
-                </div>
+      {/* My Active Bets History */}
+      <h3 style={{ marginTop: '25px', color: '#f8fafc' }}>📜 Your Active Bets</h3>
+      {placedBets.length === 0 ? (
+        <p style={{ color: '#64748b', fontSize: '14px' }}>Aapne abhi tak koi bet nahi lagayi hai.</p>
+      ) : (
+        placedBets.map(bet => (
+          <div key={bet.id} style={{ backgroundColor: '#0284c7', padding: '10px 12px', borderRadius: '6px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+            <span>{bet.option} (<b>{bet.prediction}</b>)</span>
+            <span>🪙 {bet.amount} Coins [{bet.time}]</span>
+          </div>
+        ))
+      )}
 
-                {/* Team 2 */}
-                <div style={styles.teamRow}>
-                  <div style={styles.teamInfo}>
-                    <span style={styles.flag}>{match.team2Flag}</span>
-                    <span style={styles.teamName}>{match.team2}</span>
-                  </div>
-                  <span style={styles.score}>{match.team2Score}</span>
-                </div>
-              </div>
-
-              {/* Match Footer */}
-              <div style={styles.cardFooter}>
-                <p style={styles.summary}>{match.summary}</p>
-                <p style={styles.venue}>📍 {match.venue}</p>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
     </div>
   );
-}
-
-// Inline CSS Styles
-const styles = {
-  container: {
-    maxWidth: '600px',
-    margin: '0 auto',
-    padding: '16px',
-    fontFamily: 'system-ui, -apple-system, sans-serif',
-    backgroundColor: '#0f172a',
-    minHeight: '100vh',
-    color: '#f8fafc',
-  },
-  header: {
-    textAlign: 'center',
-    marginBottom: '20px',
-    paddingBottom: '12px',
-    borderBottom: '1px solid #1e293b',
-  },
-  title: {
-    margin: 0,
-    fontSize: '24px',
-    fontWeight: 'bold',
-    color: '#38bdf8',
-  },
-  subtitle: {
-    margin: '4px 0 0 0',
-    fontSize: '14px',
-    color: '#94a3b8',
-  },
-  tabContainer: {
-    display: 'flex',
-    justifyContent: 'center',
-    gap: '8px',
-    marginBottom: '20px',
-  },
-  tabButton: {
-    flex: 1,
-    padding: '10px 0',
-    backgroundColor: '#1e293b',
-    color: '#94a3b8',
-    border: 'none',
-    borderRadius: '8px',
-    fontWeight: 'bold',
-    fontSize: '12px',
-    cursor: 'pointer',
-  },
-  activeTabButton: {
-    backgroundColor: '#0284c7',
-    color: '#ffffff',
-  },
-  matchList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-  },
-  card: {
-    backgroundColor: '#1e293b',
-    borderRadius: '12px',
-    padding: '16px',
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3)',
-    border: '1px solid #334155',
-  },
-  cardHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '12px',
-  },
-  category: {
-    fontSize: '12px',
-    color: '#94a3b8',
-    fontWeight: '500',
-  },
-  statusBadge: {
-    fontSize: '10px',
-    fontWeight: 'bold',
-    color: '#ffffff',
-    padding: '4px 8px',
-    borderRadius: '12px',
-  },
-  teamsContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '10px',
-    margin: '12px 0',
-  },
-  teamRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  teamInfo: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-  },
-  flag: {
-    fontSize: '20px',
-  },
-  teamName: {
-    fontSize: '16px',
-    fontWeight: '600',
-  },
-  score: {
-    fontSize: '15px',
-    fontWeight: 'bold',
-    color: '#f1f5f9',
-  },
-  cardFooter: {
-    marginTop: '12px',
-    paddingTop: '8px',
-    borderTop: '1px solid #334155',
-  },
-  summary: {
-    margin: 0,
-    fontSize: '13px',
-    color: '#38bdf8',
-    fontWeight: '500',
-  },
-  venue: {
-    margin: '4px 0 0 0',
-    fontSize: '11px',
-    color: '#64748b',
-  },
-  noMatches: {
-    textAlign: 'center',
-    color: '#94a3b8',
-    marginTop: '20px',
-  },
-};
+        }
