@@ -1,60 +1,76 @@
 "use client";
-
-import { useState, useEffect } from "react";
-
-export const dynamic = "force-dynamic";
+import { useState } from "react";
 
 export default function Home() {
-  const [matches, setMatches] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [file, setFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [shortLink, setShortLink] = useState("");
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    async function fetchMatches() {
-      try {
-        const apiKey = process.env.NEXT_PUBLIC_CRICKET_API_KEY;
-        if (!apiKey) {
-          setLoading(false);
-          return;
-        }
-        const res = await fetch(
-          `https://cricket.sportmonks.com/api/v2.0/livescores?api_token=${apiKey}`
-        );
-        const data = await res.json();
-        setMatches(data?.data || []);
-      } catch (err) {
-        console.error("Error fetching live matches:", err);
-      } finally {
-        setLoading(false);
+  const handleUpload = async (e) => {
+    e.preventDefault();
+    if (!file) return alert("Please select a file first!");
+
+    setUploading(true);
+    setError("");
+    setShortLink("");
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        const fullLink = `${window.location.origin}${data.downloadUrl}`;
+        setShortLink(fullLink);
+      } else {
+        setError(data.error || "Upload failed");
       }
+    } catch (err) {
+      setError("Something went wrong!");
+    } finally {
+      setUploading(false);
     }
-
-    fetchMatches();
-  }, []);
+  };
 
   return (
-    <main style={{ padding: "20px", fontFamily: "sans-serif" }}>
-      <h1>Live Cricket Scores</h1>
-      {loading ? (
-        <p>Loading live matches...</p>
-      ) : matches.length > 0 ? (
-        <div style={{ display: "grid", gap: "10px" }}>
-          {matches.map((match) => (
-            <div
-              key={match.id}
-              style={{
-                border: "1px solid #ccc",
-                padding: "15px",
-                borderRadius: "8px",
-              }}
-            >
-              <h3>{match.title || "Live Match"}</h3>
-              <p>Status: {match.status || "In Progress"}</p>
-            </div>
-          ))}
+    <div style={{ maxWidth: "600px", margin: "50px auto", padding: "20px", fontFamily: "sans-serif" }}>
+      <h2>TeraCloud - Free Storage & File Sharing</h2>
+      
+      <form onSubmit={handleUpload} style={{ display: "flex", flexDirection: "column", gap: "15px", marginTop: "20px" }}>
+        <input 
+          type="file" 
+          onChange={(e) => setFile(e.target.files[0])} 
+          style={{ padding: "10px", border: "1px solid #ccc", borderRadius: "5px" }}
+        />
+        
+        <button 
+          type="submit" 
+          disabled={uploading}
+          style={{ padding: "12px", background: "#0070f3", color: "#fff", border: "none", borderRadius: "5px", cursor: "pointer" }}
+        >
+          {uploading ? "Uploading to Telegram..." : "Upload File"}
+        </button>
+      </form>
+
+      {shortLink && (
+        <div style={{ marginTop: "20px", padding: "15px", background: "#e6fffa", border: "1px solid #38b2ac", borderRadius: "5px" }}>
+          <p><strong>File Uploaded Successfully!</strong></p>
+          <p>Monetized Link: <a href={shortLink} target="_blank" rel="noreferrer">{shortLink}</a></p>
         </div>
-      ) : (
-        <p>No live matches right now or check your API token setup.</p>
       )}
-    </main>
+
+      {error && (
+        <div style={{ marginTop: "20px", padding: "15px", background: "#fff5f5", color: "#e53e3e", borderRadius: "5px" }}>
+          {error}
+        </div>
+      )}
+    </div>
   );
-        }
+}
