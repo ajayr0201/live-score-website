@@ -51,92 +51,101 @@ export default async function DownloadPage({ params }) {
   const isPdf = /\.pdf$/i.test(fileNameLower);
 
   return (
-    <>
-      {/* Plyr Modern Player Stylesheets */}
-      <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-      <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+    <div style={{ maxWidth: "700px", margin: "30px auto", padding: "20px", fontFamily: "system-ui, sans-serif", border: "1px solid #e1e8ed", borderRadius: "12px", boxShadow: "0 8px 20px rgba(0,0,0,0.06)", background: "#ffffff" }}>
+      <h2 style={{ textAlign: "center", color: "#0070f3", marginBottom: "5px" }}>TeraCloud Storage</h2>
+      <p style={{ textAlign: "center", color: "#657786", fontSize: "14px", marginTop: "0" }}>Fast & Secure File Streaming</p>
+      <hr style={{ border: "0", height: "1px", background: "#e1e8ed", margin: "15px 0" }} />
+      
+      <div style={{ textAlign: "center", marginBottom: "20px" }}>
+        <h3 style={{ margin: "5px 0", color: "#14171a", fontSize: "18px" }}>📄 {file.file_name}</h3>
+        <span style={{ display: "inline-block", padding: "4px 12px", background: "#e8f5fd", color: "#0070f3", borderRadius: "15px", fontSize: "13px", fontWeight: "bold" }}>
+          Size: {fileSizeMB} MB
+        </span>
+      </div>
 
-      <div style={{ maxWidth: "700px", margin: "30px auto", padding: "20px", fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", border: "1px solid #e1e8ed", borderRadius: "12px", boxShadow: "0 8px 20px rgba(0,0,0,0.06)", background: "#ffffff" }}>
-        <h2 style={{ textAlign: "center", color: "#1da1f2", marginBottom: "5px" }}>TeraCloud Storage</h2>
-        <p style={{ textAlign: "center", color: "#657786", fontSize: "14px", marginTop: "0" }}>Fast & Secure File Streaming</p>
-        <hr style={{ border: "0", height: "1px", background: "#e1e8ed", margin: "15px 0" }} />
-        
-        <div style={{ textAlign: "center", marginBottom: "20px" }}>
-          <h3 style={{ margin: "5px 0", color: "#14171a", fontSize: "18px" }}>📄 {file.file_name}</h3>
-          <span style={{ display: "inline-block", padding: "4px 12px", background: "#e8f5fd", color: "#1da1f2", borderRadius: "15px", fontSize: "13px", fontWeight: "bold" }}>
-            Size: {fileSizeMB} MB
-          </span>
-        </div>
+      {/* ONLINE MEDIA PLAYER / VIEWER */}
+      {fileUrl !== "#" && (
+        <div style={{ margin: "20px 0", borderRadius: "10px", overflow: "hidden", background: "#000", border: "1px solid #333" }}>
+          {isImage && (
+            <img src={fileUrl} alt="Preview" style={{ width: "100%", maxHeight: "500px", objectFit: "contain", display: "block" }} />
+          )}
 
-        {/* ONLINE MEDIA PLAYER / VIEWER */}
-        {fileUrl !== "#" && (
-          <div style={{ margin: "20px 0", borderRadius: "10px", overflow: "hidden", background: "#000" }}>
-            {isImage && (
-              <img src={fileUrl} alt="Preview" style={{ width: "100%", maxHeight: "500px", objectFit: "contain", display: "block" }} />
-            )}
-
-            {isVideo && (
+          {isVideo && (
+            <div style={{ position: "relative", paddingTop: "56.25%" }}>
+              <iframe
+                src={`https://www.youtube-nocookie.com/embed/?html5=1`}
+                style={{ display: "none" }}
+              />
               <video 
                 controls 
+                controlsList="nodownload"
                 playsInline
-                data-plyr-config='{"controls": ["play-large", "play", "progress", "current-time", "mute", "volume", "captions", "settings", "pip", "airplay", "fullscreen"]}'
-                style={{ width: "100%" }}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  borderRadius: "8px",
+                  outline: "none"
+                }}
               >
-                <source src={fileUrl} />
+                <source src={fileUrl} type="video/mp4" />
+                Your browser does not support HTML5 video playback.
               </video>
-            )}
+            </div>
+          )}
 
-            {isAudio && (
-              <div style={{ padding: "10px", background: "#f8f9fa" }}>
-                <audio controls style={{ width: "100%" }}>
-                  <source src={fileUrl} />
-                </audio>
-              </div>
-            )}
+          {isAudio && (
+            <div style={{ padding: "15px", background: "#111" }}>
+              <audio controls style={{ width: "100%" }}>
+                <source src={fileUrl} />
+              </audio>
+            </div>
+          )}
 
-            {isPdf && (
-              <iframe src={fileUrl} style={{ width: "100%", height: "500px", border: "none" }} />
-            )}
+          {isPdf && (
+            <iframe src={fileUrl} style={{ width: "100%", height: "500px", border: "none" }} />
+          )}
 
-            {!isImage && !isVideo && !isAudio && !isPdf && (
-              <p style={{ color: "#fff", padding: "20px", textAlign: "center", fontSize: "14px", margin: 0 }}>
-                ⚠️ Direct preview not available for this file type. Please download below.
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* ADVERTISEMENT BANNER SPACE */}
-        <div style={{ padding: "20px", background: "#f7f9fa", border: "1px dashed #ccd6dd", margin: "25px 0", borderRadius: "8px", textAlign: "center" }}>
-          <p style={{ color: "#657786", fontSize: "12px", fontWeight: "bold", margin: 0 }}>[ MONETIZATION AD BANNER ]</p>
-        </div>
-
-        {/* DOWNLOAD BUTTON */}
-        <div style={{ textAlign: "center" }}>
-          {fileUrl !== "#" ? (
-            <a 
-              href={fileUrl} 
-              download
-              style={{
-                display: "inline-block",
-                padding: "14px 35px",
-                background: "#28a745",
-                color: "#ffffff",
-                textDecoration: "none",
-                borderRadius: "30px",
-                fontWeight: "bold",
-                fontSize: "16px",
-                boxShadow: "0 4px 10px rgba(40,167,69,0.3)",
-                transition: "all 0.2s"
-              }}
-            >
-              ⬇️ Direct Download
-            </a>
-          ) : (
-            <p style={{ color: "#e0245e" }}>File link could not be fetched.</p>
+          {!isImage && !isVideo && !isAudio && !isPdf && (
+            <p style={{ color: "#fff", padding: "20px", textAlign: "center", fontSize: "14px", margin: 0 }}>
+              ⚠️ Direct preview not available for this file type. Please download below.
+            </p>
           )}
         </div>
+      )}
+
+      {/* ADVERTISEMENT BANNER SPACE */}
+      <div style={{ padding: "20px", background: "#f7f9fa", border: "1px dashed #ccd6dd", margin: "25px 0", borderRadius: "8px", textAlign: "center" }}>
+        <p style={{ color: "#657786", fontSize: "12px", fontWeight: "bold", margin: 0 }}>[ MONETIZATION AD BANNER ]</p>
       </div>
-    </>
+
+      {/* DOWNLOAD BUTTON */}
+      <div style={{ textAlign: "center" }}>
+        {fileUrl !== "#" ? (
+          <a 
+            href={fileUrl} 
+            download
+            style={{
+              display: "inline-block",
+              padding: "14px 35px",
+              background: "#28a745",
+              color: "#ffffff",
+              textDecoration: "none",
+              borderRadius: "30px",
+              fontWeight: "bold",
+              fontSize: "16px",
+              boxShadow: "0 4px 10px rgba(40,167,69,0.3)",
+              transition: "all 0.2s"
+            }}
+          >
+            ⬇️ Direct Download High Speed
+          </a>
+        ) : (
+          <p style={{ color: "#e0245e" }}>File link could not be fetched.</p>
+        )}
+      </div>
+    </div>
   );
-}
+                }
