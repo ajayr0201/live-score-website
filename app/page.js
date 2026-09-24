@@ -26,14 +26,15 @@ export default function Home() {
 
       const data = await res.json();
 
-      if (data.success) {
+      if (res.ok && data.success) {
         const fullLink = `${window.location.origin}${data.downloadUrl}`;
         setShortLink(fullLink);
       } else {
+        // Direct API error print hoga yahan
         setError(data.error || "Upload failed");
       }
     } catch (err) {
-      setError("Something went wrong!");
+      setError(`Network Error: ${err.message}`);
     } finally {
       setUploading(false);
     }
@@ -67,7 +68,7 @@ export default function Home() {
       )}
 
       {error && (
-        <div style={{ marginTop: "20px", padding: "15px", background: "#fff5f5", color: "#e53e3e", borderRadius: "5px" }}>
+        <div style={{ marginTop: "20px", padding: "15px", background: "#fff5f5", color: "#e53e3e", borderRadius: "5px", wordBreak: "break-all" }}>
           {error}
         </div>
       )}
