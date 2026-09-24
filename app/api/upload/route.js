@@ -12,7 +12,10 @@ export async function POST(req) {
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
     const chatId = process.env.TELEGRAM_CHAT_ID;
 
-    // Direct Telegram API Call
+    if (!botToken || !chatId) {
+      return NextResponse.json({ error: "Vercel Env Variables missing! Check BOT_TOKEN or CHAT_ID in Vercel settings." }, { status: 500 });
+    }
+
     const tgFormData = new FormData();
     tgFormData.append("chat_id", chatId);
     tgFormData.append("document", file, file.name);
@@ -28,17 +31,15 @@ export async function POST(req) {
     const tgData = await tgRes.json();
 
     if (!tgData.ok) {
-      // Return exact error from Telegram
       return NextResponse.json(
-        { error: `Telegram API Error: ${tgData.description}` },
+        { error: `Telegram Error: ${tgData.description} (Code: ${tgData.error_code})` },
         { status: 500 }
       );
     }
 
     return NextResponse.json({
       success: true,
-      message: "File uploaded to Telegram successfully!",
-      downloadUrl: `/f/test`,
+      downloadUrl: `/f/test-code`,
     });
   } catch (err) {
     return NextResponse.json({ error: `Server Error: ${err.message}` }, { status: 500 });
