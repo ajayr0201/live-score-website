@@ -17,7 +17,10 @@ async function getFileData(code) {
 }
 
 export default async function DownloadPage({ params }) {
-  const { code } = params;
+  // Await params for Next.js 15+ compatibility
+  const resolvedParams = await params;
+  const code = resolvedParams.code;
+
   const file = await getFileData(code);
 
   if (!file) {
@@ -121,4 +124,4 @@ export default async function DownloadPage({ params }) {
       )}
     </div>
   );
-    }
+        }
