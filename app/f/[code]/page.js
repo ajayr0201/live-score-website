@@ -17,22 +17,19 @@ async function getFileData(code) {
 }
 
 export default async function DownloadPage({ params }) {
-  // Await params for Next.js 15+ compatibility
   const resolvedParams = await params;
   const code = resolvedParams.code;
-
   const file = await getFileData(code);
 
   if (!file) {
     return (
-      <div style={{ padding: "40px", textAlign: "center", fontFamily: "sans-serif" }}>
+      <div style={{ padding: "50px", textAlign: "center", fontFamily: "sans-serif" }}>
         <h1>404 - File Not Found</h1>
         <p>Yeh file exist nahi karti ya delete ho chuki hai.</p>
       </div>
     );
   }
 
-  // Telegram File Path API Call
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   const tgRes = await fetch(
     `https://api.telegram.org/bot${botToken}/getFile?file_id=${file.telegram_file_id}`
@@ -48,80 +45,98 @@ export default async function DownloadPage({ params }) {
   const fileSizeMB = (file.file_size / (1024 * 1024)).toFixed(2);
   const fileNameLower = file.file_name.toLowerCase();
 
-  // Determine File Type
   const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(fileNameLower);
   const isVideo = /\.(mp4|webm|mkv|mov)$/i.test(fileNameLower);
   const isAudio = /\.(mp3|wav|ogg)$/i.test(fileNameLower);
   const isPdf = /\.pdf$/i.test(fileNameLower);
 
   return (
-    <div style={{ maxWidth: "650px", margin: "40px auto", padding: "20px", fontFamily: "sans-serif", textAlign: "center", border: "1px solid #ddd", borderRadius: "10px", boxShadow: "0 4px 6px rgba(0,0,0,0.05)" }}>
-      <h2>TeraCloud Storage</h2>
-      <hr style={{ margin: "20px 0", border: "0.5px solid #eee" }} />
-      
-      <div style={{ marginBottom: "20px" }}>
-        <h3>📄 {file.file_name}</h3>
-        <p style={{ color: "#666" }}>Size: {fileSizeMB} MB</p>
-      </div>
+    <>
+      {/* Plyr Modern Player Stylesheets */}
+      <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+      <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
 
-      {/* ONLINE MEDIA PLAYER / VIEWER SECTION */}
-      {fileUrl !== "#" && (
-        <div style={{ margin: "20px 0", padding: "10px", background: "#f8f9fa", borderRadius: "8px" }}>
-          {isImage && (
-            <img src={fileUrl} alt="Preview" style={{ maxWidth: "100%", maxHeight: "400px", borderRadius: "6px" }} />
-          )}
+      <div style={{ maxWidth: "700px", margin: "30px auto", padding: "20px", fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", border: "1px solid #e1e8ed", borderRadius: "12px", boxShadow: "0 8px 20px rgba(0,0,0,0.06)", background: "#ffffff" }}>
+        <h2 style={{ textAlign: "center", color: "#1da1f2", marginBottom: "5px" }}>TeraCloud Storage</h2>
+        <p style={{ textAlign: "center", color: "#657786", fontSize: "14px", marginTop: "0" }}>Fast & Secure File Streaming</p>
+        <hr style={{ border: "0", height: "1px", background: "#e1e8ed", margin: "15px 0" }} />
+        
+        <div style={{ textAlign: "center", marginBottom: "20px" }}>
+          <h3 style={{ margin: "5px 0", color: "#14171a", fontSize: "18px" }}>📄 {file.file_name}</h3>
+          <span style={{ display: "inline-block", padding: "4px 12px", background: "#e8f5fd", color: "#1da1f2", borderRadius: "15px", fontSize: "13px", fontWeight: "bold" }}>
+            Size: {fileSizeMB} MB
+          </span>
+        </div>
 
-          {isVideo && (
-            <video controls style={{ width: "100%", maxHeight: "360px", borderRadius: "6px" }}>
-              <source src={fileUrl} />
-              Your browser does not support video playback.
-            </video>
-          )}
+        {/* ONLINE MEDIA PLAYER / VIEWER */}
+        {fileUrl !== "#" && (
+          <div style={{ margin: "20px 0", borderRadius: "10px", overflow: "hidden", background: "#000" }}>
+            {isImage && (
+              <img src={fileUrl} alt="Preview" style={{ width: "100%", maxHeight: "500px", objectFit: "contain", display: "block" }} />
+            )}
 
-          {isAudio && (
-            <audio controls style={{ width: "100%" }}>
-              <source src={fileUrl} />
-              Your browser does not support audio playback.
-            </audio>
-          )}
+            {isVideo && (
+              <video 
+                controls 
+                playsInline
+                data-plyr-config='{"controls": ["play-large", "play", "progress", "current-time", "mute", "volume", "captions", "settings", "pip", "airplay", "fullscreen"]}'
+                style={{ width: "100%" }}
+              >
+                <source src={fileUrl} />
+              </video>
+            )}
 
-          {isPdf && (
-            <iframe src={fileUrl} style={{ width: "100%", height: "450px", border: "none", borderRadius: "6px" }} />
-          )}
+            {isAudio && (
+              <div style={{ padding: "10px", background: "#f8f9fa" }}>
+                <audio controls style={{ width: "100%" }}>
+                  <source src={fileUrl} />
+                </audio>
+              </div>
+            )}
 
-          {!isImage && !isVideo && !isAudio && !isPdf && (
-            <p style={{ color: "#777", fontSize: "14px" }}>⚠️ Yeh file type online preview supported nahi karta. Niche se direct download karein.</p>
+            {isPdf && (
+              <iframe src={fileUrl} style={{ width: "100%", height: "500px", border: "none" }} />
+            )}
+
+            {!isImage && !isVideo && !isAudio && !isPdf && (
+              <p style={{ color: "#fff", padding: "20px", textAlign: "center", fontSize: "14px", margin: 0 }}>
+                ⚠️ Direct preview not available for this file type. Please download below.
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* ADVERTISEMENT BANNER SPACE */}
+        <div style={{ padding: "20px", background: "#f7f9fa", border: "1px dashed #ccd6dd", margin: "25px 0", borderRadius: "8px", textAlign: "center" }}>
+          <p style={{ color: "#657786", fontSize: "12px", fontWeight: "bold", margin: 0 }}>[ MONETIZATION AD BANNER ]</p>
+        </div>
+
+        {/* DOWNLOAD BUTTON */}
+        <div style={{ textAlign: "center" }}>
+          {fileUrl !== "#" ? (
+            <a 
+              href={fileUrl} 
+              download
+              style={{
+                display: "inline-block",
+                padding: "14px 35px",
+                background: "#28a745",
+                color: "#ffffff",
+                textDecoration: "none",
+                borderRadius: "30px",
+                fontWeight: "bold",
+                fontSize: "16px",
+                boxShadow: "0 4px 10px rgba(40,167,69,0.3)",
+                transition: "all 0.2s"
+              }}
+            >
+              ⬇️ Direct Download
+            </a>
+          ) : (
+            <p style={{ color: "#e0245e" }}>File link could not be fetched.</p>
           )}
         </div>
-      )}
-
-      {/* ADVERTISEMENT SPACE */}
-      <div style={{ padding: "15px", background: "#f1f3f5", border: "1px dashed #adb5bd", margin: "20px 0", borderRadius: "6px" }}>
-        <p style={{ color: "#6c757d", fontSize: "13px", margin: 0 }}>[ Advertisement Space ]</p>
       </div>
-
-      {/* DOWNLOAD BUTTON */}
-      {fileUrl !== "#" ? (
-        <a 
-          href={fileUrl} 
-          download
-          style={{
-            display: "inline-block",
-            padding: "12px 28px",
-            background: "#28a745",
-            color: "#fff",
-            textDecoration: "none",
-            borderRadius: "6px",
-            fontWeight: "bold",
-            fontSize: "16px",
-            marginTop: "10px"
-          }}
-        >
-          ⬇️ Download Original File
-        </a>
-      ) : (
-        <p style={{ color: "red" }}>File link expire ya generate nahi hua.</p>
-      )}
-    </div>
+    </>
   );
-        }
+}
