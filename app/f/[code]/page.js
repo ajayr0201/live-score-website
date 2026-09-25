@@ -1,3 +1,5 @@
+"use client";
+import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
@@ -16,10 +18,69 @@ async function getFileData(code) {
   return data;
 }
 
-export default async function DownloadPage({ params }) {
-  const resolvedParams = await params;
-  const code = resolvedParams.code;
-  const file = await getFileData(code);
+export default function DownloadPage({ params }) {
+  const [file, setFile] = useState(null);
+  const [fileUrl, setFileUrl] = useState("#");
+  const [loading, setLoading] = useState(true);
+
+  // App detection logic
+  useEffect(() => {
+    const userAgent = navigator.userAgent || '';
+    
+    if (/android/i.test(userAgent)) {
+      const currentUrl = window.location.href;
+      const appUrl = 'mayajaall://open?url=' + encodeURIComponent(currentUrl);
+      
+      // 1. App kholne ki koshish karo
+      const timer = setTimeout(() => {
+        if (!document.hidden) {
+          // App nahi khuli, matlab installed nahi hai
+          window.location.href = '/download.html';
+        }
+      }, 2000);
+      
+      window.location.href = appUrl;
+      
+      // 2. Agar app khul gayi, toh timer cancel karo
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) clearTimeout(timer);
+      });
+    }
+  }, []);
+
+  // File data fetch karo
+  useEffect(() => {
+    async function fetchData() {
+      const resolvedParams = await params;
+      const code = resolvedParams.code;
+      const fileData = await getFileData(code);
+
+      if (fileData) {
+        setFile(fileData);
+
+        const botToken = process.env.TELEGRAM_BOT_TOKEN;
+        const tgRes = await fetch(
+          `https://api.telegram.org/bot${botToken}/getFile?file_id=${fileData.telegram_file_id}`
+        );
+        const tgData = await tgRes.json();
+
+        if (tgData.ok) {
+          const filePath = tgData.result.file_path;
+          setFileUrl(`https://api.telegram.org/file/bot${botToken}/${filePath}`);
+        }
+      }
+      setLoading(false);
+    }
+    fetchData();
+  }, [params]);
+
+  if (loading) {
+    return (
+      <div style={{ padding: "50px", textAlign: "center", fontFamily: "sans-serif" }}>
+        <h1>Loading...</h1>
+      </div>
+    );
+  }
 
   if (!file) {
     return (
@@ -28,18 +89,6 @@ export default async function DownloadPage({ params }) {
         <p>Yeh file exist nahi karti ya delete ho chuki hai.</p>
       </div>
     );
-  }
-
-  const botToken = process.env.TELEGRAM_BOT_TOKEN;
-  const tgRes = await fetch(
-    `https://api.telegram.org/bot${botToken}/getFile?file_id=${file.telegram_file_id}`
-  );
-  const tgData = await tgRes.json();
-
-  let fileUrl = "#";
-  if (tgData.ok) {
-    const filePath = tgData.result.file_path;
-    fileUrl = `https://api.telegram.org/file/bot${botToken}/${filePath}`;
   }
 
   const fileSizeMB = (file.file_size / (1024 * 1024)).toFixed(2);
@@ -63,7 +112,6 @@ export default async function DownloadPage({ params }) {
         </span>
       </div>
 
-      {/* ONLINE MEDIA PLAYER / VIEWER */}
       {fileUrl !== "#" && (
         <div style={{ margin: "20px 0", borderRadius: "10px", overflow: "hidden", background: "#000", border: "1px solid #333" }}>
           {isImage && (
@@ -72,10 +120,6 @@ export default async function DownloadPage({ params }) {
 
           {isVideo && (
             <div style={{ position: "relative", paddingTop: "56.25%" }}>
-              <iframe
-                src={`https://www.youtube-nocookie.com/embed/?html5=1`}
-                style={{ display: "none" }}
-              />
               <video 
                 controls 
                 controlsList="nodownload"
@@ -116,12 +160,10 @@ export default async function DownloadPage({ params }) {
         </div>
       )}
 
-      {/* ADVERTISEMENT BANNER SPACE */}
       <div style={{ padding: "20px", background: "#f7f9fa", border: "1px dashed #ccd6dd", margin: "25px 0", borderRadius: "8px", textAlign: "center" }}>
         <p style={{ color: "#657786", fontSize: "12px", fontWeight: "bold", margin: 0 }}>[ MONETIZATION AD BANNER ]</p>
       </div>
 
-      {/* DOWNLOAD BUTTON */}
       <div style={{ textAlign: "center" }}>
         {fileUrl !== "#" ? (
           <a 
