@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mayajaall Download</title>
+    <title>Mayajaall</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -39,10 +39,13 @@
             margin: 15px 0;
             transition: transform 0.2s, box-shadow 0.2s;
             color: white;
+            border: none;
+            cursor: pointer;
+            width: 100%;
         }
         .btn:hover { transform: scale(1.03); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+        .btn-open { background: #9c27b0; }
         .btn-download { background: #4CAF50; }
-        .btn-playstore { background: #2196F3; }
         .footer { margin-top: 25px; font-size: 13px; opacity: 0.7; }
     </style>
 </head>
@@ -50,19 +53,31 @@
     <div class="container">
         <div class="logo">🎬</div>
         <h1>Mayajaall</h1>
-        <p>Video dekhne ke liye app download karo</p>
+        <p>Video dekhne ke liye app kholo ya download karo</p>
+        
+        <button onclick="openApp()" class="btn btn-open">
+            📱 Open in App
+        </button>
         
         <a href="https://github.com/ajayr0201/Mayajaall/releases/latest/download/app-release.apk" class="btn btn-download">
             📥 Download App (Direct APK)
-        </a>
-        
-        <a href="https://play.google.com/store/apps/details?id=com.example.mayajaall" class="btn btn-playstore">
-            ▶️ Download from Play Store
         </a>
         
         <div class="footer">
             Fast & Secure Video Streaming
         </div>
     </div>
+
+    <script>
+        function openApp() {
+            // Current URL se video code nikaalo
+            var urlParams = new URLSearchParams(window.location.search);
+            var videoCode = urlParams.get('code') || 'wpaf82';
+            var appUrl = 'mayajaall://open?url=https://live-score-website-alpha.vercel.app/f/' + videoCode;
+            
+            // App kholne ki koshish karo
+            window.location.href = appUrl;
+        }
+    </script>
 </body>
 </html>
